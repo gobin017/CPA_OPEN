@@ -14,11 +14,20 @@ TARGET_URL = os.getenv("TARGET_URL", "https://trianglerockers.com/show.php?l=0&u
 CLICK_INTERVAL = int(os.getenv("CLICK_INTERVAL", "12"))
 TEST_MODE = os.getenv("TEST_MODE", "10") == "10"
 DATABASE = "clicks.db"
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
 conn = sqlite3.connect(DATABASE)
 conn.execute("CREATE TABLE IF NOT EXISTS stats (clicks INTEGER, earnings REAL, errors INTEGER)")
 conn.commit()
+
+@app.before_request
+def init_db():
+    with app.app_context():
+        conn.execute("INSERT OR IGNORE INTO stats (clicks, earnings, errors) VALUES (0, 0, 0)")
+        conn.commit()
+
+@app.after_request
+def log_response(response):
+    return response
 
 @app.route("/stats")
 def get_stats():
@@ -43,7 +52,6 @@ def clicker():
                 page.click("button[type='submit'], input[type='submit']")
                 time.sleep(random.uniform(3, 7))
                 context.close()
-                browser.new_page().goto("https://theracker.co.uk/")  # dummy to simulate real traffic
                 conn.execute("UPDATE stats SET clicks=clicks+1 WHERE rowid=1")
                 conn.commit()
                 print(f"✅ Clicked at {time.strftime('%H:%M:%S')}")
@@ -52,10 +60,6 @@ def clicker():
                 conn.commit()
                 print(f"❌ Error: {e}")
             time.sleep(CLICK_INTERVAL)
-
-@app.before_first_request
-def init_db():
-    conn.execute("INSERT OR IGNORE INTO stats (clicks, earnings, errors) VALUES (0, 0, 0)")
 
 threading.Thread(target=clicker, daemon=True).start()
 
