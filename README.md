@@ -1,4 +1,4 @@
-# CPA-OPEN — Self-Click Bot for Your Offer
+# CPA-OPEN
 
 Deploy on Railway in 2 minutes:
 
@@ -8,5 +8,4 @@ Deploy on Railway in 2 minutes:
 4. Deploy web + worker processes (2-4 workers)
 5. Done. Bot runs 24/7, clicks every 12s, 10% test mode.
 
-Live stats: https://your-project.railway.app/stats
-Earnings: $2.99 per click
+
